@@ -1,0 +1,49 @@
+CUSTOMER APIs --
+
+/default_menu - 
+inputs - storeId
+response - [{'dishId': String, 'dishName': String, 'dishDescription': String, 'dishImage': URL, 'dishCategory': String, 'sellingPrice': float, 'tag': String, 'rating': float}] (Sorted by position)
+
+
+/process_image -
+
+inputs - imagefile, timestamp in query parameter
+response - {'validImage': 'True/False'
+            'proceedToMenu': 'True/False',
+            'customerId': 'Unique Id (string)',
+            'dishList': [{"discount": float, "dishId": String, "position": Integer}]}
+
+/store_details - 
+
+inputs - customerId(sent in previous response), number, email in query parameter
+response - {'success': 'True/False'} (you can ignore the response and move forward if you want)
+
+
+/apply_coupon - 
+
+inputs - customerId, storeId, couponString
+response - {'success': 'True/False', 'discount': float (discount on the price)} 
+
+
+/save_order -
+
+inputs - customerId, list_of_dish_ids, list_of_selling_price, list_of_actual_price, store_id, timestamp
+response - {'success': 'True/False'} 
+
+
+
+
+EMPLOYEE APIs --
+
+
+
+/employee_sign_in -
+
+inputs - imagefile, timestamp in query parameter
+response - {'identificationSuccesful': 'True/False', 'employeeName': String}
+
+
+/employee_sign_out -
+
+inputs - imagefile, timestamp in query parameter
+response - {'identificationSuccesful': 'True/False', 'employeeName': String}
