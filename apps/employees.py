@@ -21,6 +21,9 @@ import pandas.io.sql as psql
 import plotly.graph_objs as go
 
 
+
+colors = ['rgb(51, 102, 255)', 'rgb(204, 153, 0)', 'rgb(153, 0, 255)']
+
 def get_list_of_stores():
     list_of_stores = db_interface.get_list_of_stores()
     #indices_of_stores = list(map(lambda x: 'store{}'.format(x), range(1, len(list_of_stores)+1)))
@@ -73,12 +76,11 @@ layout = [
     [Input('store_name', 'value')]
 )
 def update_date_dropdown(store_name):
-    print(store_name)
     store_id = common_db_calls_saved.store_name_to_id[store_name]
     employee_list = common_db_calls_saved.store_employees_map[store_id]
     employee_names = list(map(lambda x: common_db_calls_saved.employee_id_to_name[x], employee_list))
     
-    return list(map(lambda x: {'label': x[0], 'value': x[1]}, zip(employee_names, employee_list)))
+    return list(map(lambda x: {'label': x[0].capitalize(), 'value': x[1]}, zip(employee_names, employee_list)))
 
 
 @app.callback(Output("employees_specific_content", "children"), [Input("employee_names", "value")])
@@ -90,8 +92,11 @@ def render_employee_content(employee_id):
     query = "SELECT employee_register.employeeid, name, manager, islate, isovertime, hoursworked, entrydate, timein, workinghour FROM employee_register INNER JOIN employee_attributes ON employee_register.employeeid=employee_attributes.employeeid where employee_attributes.employeeid={};".format(str_employee_id)
     df = psql.read_sql(query, db_interface.conn)
 
+
+    df['name'] = df.apply(lambda row: row['name'].capitalize(), axis=1)
+
     name = df.iloc[[0]]['name'][0]
-    manager = df.iloc[[0]]['manager'][0]
+    manager = df.iloc[[0]]['manager'][0].capitalize()
     working_since = df['entrydate'].min()
 
     layout = [
@@ -121,8 +126,7 @@ def render_employee_content(employee_id):
 
         html.Div(
             [
-                html.P("Percentage Of Days"),
-                
+               
                 dcc.Graph(
                     id="employee_pie",
                     figure=go.Figure(data = employee_pie_chart_data(df), 
@@ -138,8 +142,7 @@ def render_employee_content(employee_id):
 
         html.Div(
             [
-                html.P("Working Hour Graph"),
-                
+               
                 dcc.Graph(
                     id="working_hour_graph",
                     figure=go.Figure(data = get_employee_working_graph_data(df), 
@@ -160,11 +163,7 @@ def render_employee_content(employee_id):
 
 def get_employee_working_graph_data(df):
 
-    #timein = df.iloc[[0]]['timein'][0]
-    #timeout = df.iloc[[0]]['timeout'][0]
-    #duration = datetime.combine(date.min, timeout) - datetime.combine(date.min, timein)
-    #duration = duration.total_seconds()/3600
-    
+   
     duration = df.iloc[[0]]['workinghour'][0]
 
     df['time'] = df['hoursworked'].apply(lambda x: x.total_seconds()/3600.0)
@@ -204,6 +203,8 @@ def get_employee_working_graph_data(df):
 
 def get_employee_working_graph_layout():
     layout = go.Layout()
+
+    layout = { 'title': 'Working Hours'}
     return layout
 
 
@@ -235,11 +236,10 @@ def employee_pie_chart_data(df):
                    hoverinfo='label+percent', textinfo='value', 
                    textfont=dict(size=20))
 
-
     return [trace]
 
 def employee_pie_chart_layout():
-    layout = go.Layout()
+    layout = {'title': 'On-time Performance'}
     return layout
 
 
@@ -249,6 +249,8 @@ def render_store_content(store_name):
     store_id = "'{}'".format(store_id)
     query = "SELECT employee_register.employeeid, name, islate, isovertime, hoursworked, entrydate FROM employee_register INNER JOIN employee_attributes ON employee_register.employeeid=employee_attributes.employeeid where StoreId={};".format(store_id)
     df = psql.read_sql(query, db_interface.conn)
+    df['name'] = df.apply(lambda row: row['name'].capitalize(), axis=1)
+
 
     layout = [
 
@@ -276,8 +278,7 @@ def render_store_content(store_name):
         html.Div([
         html.Div(
                 [
-                    html.P("Store Average Working Hour"),
-                    dcc.Graph(
+                   dcc.Graph(
                         id="average_working_hour_graph",
                         figure=go.Figure(data = get_average_working_hour_graph_data(df), 
                             layout = get_average_working_hour_graph_layout()),
@@ -291,8 +292,7 @@ def render_store_content(store_name):
 
         html.Div(
                 [
-                    html.P("Employee Average Working Hour"),
-                    dcc.Graph(
+                   dcc.Graph(
                         id="employee_average_working_hour_graph",
                         figure=go.Figure(data = get_employee_average_working_hour_graph_data(df), 
                             layout = get_employee_average_working_hour_graph_layout()),
@@ -310,8 +310,7 @@ def render_store_content(store_name):
 
         html.Div(
                 [
-                    html.P("Employee Work Details"),
-                    dcc.Graph(
+                   dcc.Graph(
                         id="employee_work_graph",
                         figure=go.Figure(data = get_employee_work_details_graph_data(df), 
                             layout = get_employee_work_details_graph_layout()),
@@ -389,7 +388,7 @@ def get_employee_work_details_graph_data(df):
     return data
 
 def get_employee_work_details_graph_layout():
-    layout = go.Layout()
+    layout = {'title': 'Employee Performance Details'}
     return layout
 
 def get_employee_average_working_hour_graph_data(df):
@@ -398,12 +397,18 @@ def get_employee_average_working_hour_graph_data(df):
     df = df.groupby(['employeeid', 'name'])['time'].mean().reset_index()
     Y = df['name'].values
     X = df['time'].values
-    data = [go.Bar(x= X, y=Y, orientation="h")]
+
+    #repeat = len(Y) // len(colors) + 1
+    #bar_colors = (colors*repeat)[:len(Y)]
+
+    bar_colors = ['rgb(204, 51, 153)']*len(Y)
+
+    data = [go.Bar(x= X, y=Y, orientation="h", marker=dict(color=bar_colors))]
     return data
 
 
 def get_employee_average_working_hour_graph_layout():
-    layout = go.Layout()
+    layout = {'title': 'Employee Average Working Hours'}
     return layout
 
 
@@ -413,12 +418,15 @@ def get_average_working_hour_graph_data(df):
     df = df.groupby(['entrydate'])['time'].mean().reset_index()
     X = df['entrydate'].values
     Y = df['time'].values
-    data = [go.Bar(x= X, y=Y)]
+    repeat = len(Y) // len(colors) + 1
+    bar_colors = (colors*repeat)[:len(Y)]
+
+    data = [go.Bar(x= X, y=Y, marker=dict(color=bar_colors))]
     return data
 
 
 def get_average_working_hour_graph_layout():
-    layout = go.Layout()
+    layout = {'title': 'Store Average Working Hours'}
     return layout
 
 def get_number_of_employees(df):
