@@ -45,8 +45,6 @@ def get_dish_combinations_data(df):
         for dish_pair in combinations(dishes, 2):
             dish_pairs[tuple(dish_pair)] += 1
     
-    print(dish_pairs)
-
     X = []
     Y = []
 
