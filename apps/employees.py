@@ -211,6 +211,27 @@ def get_employee_working_graph_layout():
 
 
 def employee_pie_chart_data(df):
+    late_days = df['islate'].sum()
+
+    df3 = df
+    df3['entrydatelis'] = df3['entrydate'].apply(lambda x: [x])
+    days_worked = list(map(lambda x: x.isoformat(), df3['entrydatelis'].sum()))
+
+    end_date = datetime.now(pytz.timezone('Asia/Kolkata')).date()
+    start_date = end_date - timedelta(days=14)
+
+    dd = [start_date + timedelta(days=x) for x in range((end_date-start_date).days)]
+    set_of_days = set(dd)
+    set_of_leaves = set(common_db_calls_saved.list_of_leaves)
+
+    set_of_working_days = set_of_days - set_of_leaves
+    set_of_working_days = set(map(lambda x: x.isoformat(), set_of_working_days))
+    
+    absent_days = len(set_of_working_days - set(days_worked))
+    ontime_days = len(days_worked) - late_days   
+
+
+    ''' 
     end_date = datetime.now(pytz.timezone('Asia/Kolkata')).date()
     start_date = df['entrydate'].min()
 
@@ -225,7 +246,7 @@ def employee_pie_chart_data(df):
     absent_days = len(set_of_working_days - set(days_worked))
     late_days = len(set_of_working_days & set(days_late))
     ontime_days = len(set_of_working_days & set(days_worked))
-
+    '''
 
     labels = ['absent', 'late', 'on-time']
     values = [absent_days, late_days, ontime_days]
