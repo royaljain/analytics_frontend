@@ -1,4 +1,4 @@
-DATABASE = 'hatti_kaapi_demo' 
+DATABASE = 'demo' 
 USER = 'postgres' 
-PASSWORD = 'alphabeta%5' 
-HOST = '35.247.4.87'
+PASSWORD = 'alphabeta' 
+HOST = '34.73.145.251'

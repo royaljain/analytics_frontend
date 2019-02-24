@@ -22,15 +22,31 @@ import plotly.graph_objs as go
 from collections import defaultdict
 from collections import Counter
 from itertools import combinations
+from common_db_calls_saved import dish_id_to_name, store_name_to_id
 
+
+def map_id_to_name(ids):
+    return list(map(lambda x: dish_id_to_name[x], ids))
 
 def get_dish_combinations_layout():
-    layout = go.Layout()
+    layout = go.Layout(
+        title='Favorutie Combinations')
 
     return layout
 
 
-def get_dish_combinations_data(df):
+
+def get_most_discounted_dish(df):
+
+    df1 = df.groupby(['dishid'])['price'].sum().reset_index()
+    df2 = df.groupby(['dishid'])['discount'].sum().reset_index()
+    Y1 = df1['price'].values
+    Y2 = df2['discount'].values
+
+    return dish_id_to_name[X[np.argmax(list(map(lambda x: x[1]/x[0], zip(Y1, Y2))))]]
+
+
+def get_best_combination(df):
     df['dish_list'] = df.apply(lambda row: [row['dishid']], axis=1)
     df1 = df.groupby(['orderid'])['dish_list'].sum().reset_index()
     df1['dishes_list'] = df1.apply(lambda row: [row['dish_list']], axis=1)
@@ -49,13 +65,53 @@ def get_dish_combinations_data(df):
     Y = []
 
     for pair in dish_pairs.keys():
-        X.append('{}+{}'.format(pair[0], pair[1]))
+        X.append('{}+{}'.format(dish_id_to_name[pair[0]], dish_id_to_name[pair[1]]))
         Y.append(dish_pairs[pair])
 
+    sortx = [x for _,x in sorted(zip(Y,X))]
+    sorty = sorted(Y)
 
+    sortx = sortx[:15]
+    sorty = sorty[:15]
+    
+    best_combination = sortx[0].split('+')  
+
+    return best_combination
+
+def get_dish_combinations_data(df):
+    global best_combination
+    df['dish_list'] = df.apply(lambda row: [row['dishid']], axis=1)
+    df1 = df.groupby(['orderid'])['dish_list'].sum().reset_index()
+    df1['dishes_list'] = df1.apply(lambda row: [row['dish_list']], axis=1)
+    dishes_list = df1['dishes_list'].sum()
+  
+
+    dish_pairs = defaultdict(int)
+
+    for dishes in dishes_list:
+        dishes = sorted(dishes)    
+
+        for dish_pair in combinations(dishes, 2):
+            dish_pairs[tuple(dish_pair)] += 1
+    
+    X = []
+    Y = []
+
+    for pair in dish_pairs.keys():
+        X.append('{}+{}'.format(dish_id_to_name[pair[0]], dish_id_to_name[pair[1]]))
+        Y.append(dish_pairs[pair])
+
+    sortx = [x for _,x in sorted(zip(Y,X))]
+    sorty = sorted(Y)
+
+    sortx = sortx[:15]
+    sorty = sorty[:15]
+    
+    best_combination = sortx[0].split('+')  
+  
     trace = go.Bar(
-        x=Y,
-        y=X,
+        x=sorty,
+        y=sortx,
         name='Combinations',
         orientation = 'h'
     )
@@ -66,6 +122,7 @@ def get_dish_combinations_data(df):
 def get_dishes_revenue_layout():
 
     layout = go.Layout(
+        title='Revenue of Dishes',
         barmode='stack'
     )
 
@@ -78,18 +135,22 @@ def get_dishes_revenue_data(df):
     df2 = df.groupby(['dishid'])['discount'].sum().reset_index()
     Y1 = df1['price'].values
     Y2 = df2['discount'].values
-    X = df1['dishid'].values
+    X = map_id_to_name(df1['dishid'].values)
 
+
+    sortx = [x for _,x in sorted(zip(Y1,X))]
+    sorty1 = sorted(Y1)
+    sorty2 = [x for _,x in sorted(zip(Y1,Y2))]
 
     trace1 = go.Bar(
-        x=Y1,
-        y=X,
+        x=sorty1,
+        y=sortx,
         name='Price',
         orientation = 'h'
     )
     trace2 = go.Bar(
-        x=Y2,
-        y=X,
+        x=sorty2,
+        y=sortx,
         name='Discount',
         orientation = 'h'
     )
@@ -103,6 +164,7 @@ def get_dishes_revenue_data(df):
 def get_dishes_count_layout():
 
     layout = go.Layout(
+        title='Count of Dishes',
         barmode='stack'
     )
 
@@ -113,8 +175,7 @@ def get_dishes_count_data(df):
 
     df1 = df.groupby(['dishid']).size().reset_index(name='counts')
     Y = df1['counts'].values
-    X = df1['dishid'].values
-
+    X = map_id_to_name(df1['dishid'].values)
 
     trace1 = go.Bar(
         x=X,
@@ -158,7 +219,43 @@ layout = [
 
         html.Div(id="store_specific_content", className="row", style={"margin": "2% 3%"}),
 
+        html.Div(
+        [
+            html.H1('Recommendations')
+        ],),
+
+        html.Div(id="store_specific_recommendations", className="row", style={"margin": "2% 3%"}),
+
+
     ]
+
+
+@app.callback(Output("store_specific_recommendations", "children"), [Input("store_name", "value")])
+def store_specific_recommendations_content(store_name):
+    
+    store_id = common_db_calls_saved.store_name_to_id[store_name]
+    store_id = "'{}'".format(store_id)
+
+    query = "SELECT orderid, consumerid, storeid, dishid, price, discount, coupon, orderdate, ordertime FROM order_details WHERE storeId={};".format(store_id)
+    df = psql.read_sql(query, db_interface.conn)
+    best_combination = get_best_combination(df)
+
+
+    layout = [
+        html.Div(
+            html.H5('In {} store, Best Dish Combination is {} plus {}. You may want to use this dish in Upsell Algorithm.'.format(store_name, best_combination[0], best_combination[1]))
+        ),
+        html.Div(
+
+            html.H5('In {} store, {} has too much discount. You may want to reduce the discount on this dish.'.format(store_name, best_combination[0], best_combination[1])),
+        ),
+        html.Div(
+
+            html.H5('In {} store, {} is trending. You may want improve the position of this dish in menu.'.format(store_name, common_db_calls_saved.store_to_dish[common_db_calls_saved.store_name_to_id[store_name]])),
+        )
+    ]
+
+    return layout
 
 
 @app.callback(Output("chain_content", "children"), [Input("store_name", "value")])

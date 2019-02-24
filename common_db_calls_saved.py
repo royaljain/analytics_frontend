@@ -12,6 +12,10 @@ for employee in employee_list:
 
 store_name_to_id = {'Ulsoor Road': 'store1', 'IndiraNagar': 'store2', 'Airport': 'store3'}
 list_of_leaves = [date(2019, 2, 3), date(2019, 1, 12)]
+dish_id_to_name = {'dish1': 'coffee','dish2' : 'tea', 'dish3': 'milkshake', 'dish4': 'ginger tea',
+ 'dish5': 'pancake', 'dish6': 'pizza', 'dish7': 'samosa', 'dish8': 'burger'}
+
+store_to_dish = { 'store1' : 'pancake', 'store2' : 'pancake', 'store3' : 'burger'}
 
 
 employee_id_to_name = {}

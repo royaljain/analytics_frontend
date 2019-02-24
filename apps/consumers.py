@@ -24,15 +24,6 @@ from collections import Counter
 from itertools import combinations
 
 
-def get_number_of_customers_layout():
-    
-    layout = go.Layout(
-        barmode='stack'
-    )
-
-    return layout
-
-
 
 def get_number_of_customers_data(df):
     df1 = df.groupby(['orderdate'])['consumerid'].nunique().reset_index()
@@ -68,6 +59,7 @@ def get_number_of_customers_data(df):
 def get_number_of_customers_layout():
     
     layout = go.Layout(
+        title='Number of Customers by Date',
         barmode='stack'
     )
 
@@ -81,7 +73,10 @@ def is_weekday(dt):
 
 
 def get_consumer_distribution_layout():
-    layout = go.Layout()
+    layout = go.Layout(
+        title='Customers by time of day',
+        barmode='stack'
+    )
 
     return layout
 
@@ -125,7 +120,9 @@ def get_consumer_distribution_data(df):
 
 def get_consumer_spend_distribution_layout():
 
-    layout = go.Layout()
+    layout = go.Layout(
+        title='How much Consumers Spend'
+    )
 
     return layout
 
@@ -184,7 +181,23 @@ layout = [
 
         html.Div(id="store_specific_consumer_content", className="row", style={"margin": "2% 3%"}),
 
+        html.Div(
+        [
+            html.H1('Recommendations')
+        ],),
+
+        html.Div(id="store_specific_consumer_recommendations", className="row", style={"margin": "2% 3%"}),
+
+
     ]
+
+@app.callback(Output("store_specific_consumer_recommendations", "children"), [Input("employee_names", "value")])
+def render_employee_content(employee_id):
+    layout = []
+
+    return layout
+
+
 
 
 @app.callback(Output("chain_consumer_content", "children"), [Input("store_name", "value")])

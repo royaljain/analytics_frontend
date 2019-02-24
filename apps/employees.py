@@ -69,7 +69,23 @@ layout = [
         ),
 
         html.Div(id="employees_specific_content", className="row", style={"margin": "2% 3%"}),
+
+        html.Div(
+        [
+            html.H1('Recommendations')
+        ],),
+
+        html.Div(id="employees_specific_recommendations", className="row", style={"margin": "2% 3%"}),
+
     ]
+
+
+@app.callback(Output("employees_specific_recommendations", "children"), [Input("employee_names", "value")])
+def render_employee_content(employee_id):
+    layout = []
+
+    return layout
+
 
 
 @app.callback(Output('employee_names', 'options'),
