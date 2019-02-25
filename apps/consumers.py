@@ -191,9 +191,42 @@ layout = [
 
     ]
 
-@app.callback(Output("store_specific_consumer_recommendations", "children"), [Input("employee_names", "value")])
-def render_employee_content(employee_id):
-    layout = []
+
+@app.callback(Output("store_specific_consumer_recommendations", "children"), [Input("store_name", "value")])
+def employee_recommendations_content(store_name):
+    
+    if store_name == 'Ulsoor Road':
+        layout = [
+            html.Div(
+                html.H5('In Ulsoor Road store, same day repeating customers are very few, try incentivsing multiple visits a day.')
+            ),
+            html.Div(
+
+                html.H5('In Ulsoor Road store, customers generally visit before and after office hours.'),
+            ),
+        ]
+    elif store_name == 'IndiraNagar':
+        layout = [
+            html.Div(
+                html.H5('In IndiraNagar store, sales were extremely low from 11 to 16 February. Kindly Investigate.')
+            ),
+            html.Div(
+
+                html.H5('In IndiraNagar store, there\'s a very high demand at lunch hour'),
+            ),
+        ]
+    elif store_name == 'Airport':
+        layout = [
+            html.Div(
+                html.H5('In Airport store, lot of variation in sales between 6th and 7th February. Kindly investigate.')
+            ),
+            html.Div(
+
+                html.H5('In Airport store, people prefer early morning and evening timing'),
+            ),
+        ]
+
+
 
     return layout
 

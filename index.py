@@ -7,7 +7,7 @@ import plotly.plotly as py
 from plotly import graph_objs as go
 import math
 from app import app
-from apps import employees, dishes, consumers
+from apps import employees, dishes, consumers, upcoming_features
 
 
 app.layout = html.Div(
@@ -16,9 +16,9 @@ app.layout = html.Div(
         html.Div([
 
             html.Span("Analytics Engine", className='app-title'),
-            
+            #https://s3-us-west-1.amazonaws.com/plotly-tutorials/logo/new-branding/dash-logo-by-plotly-stripe-inverted.png
             html.Div(
-                html.Img(src='https://s3-us-west-1.amazonaws.com/plotly-tutorials/logo/new-branding/dash-logo-by-plotly-stripe-inverted.png',height="100%")
+                html.Img(src='static/hatti_kaapi_logo.png',height="100%")
                 ,style={"float":"right","height":"100%"})
             ],
             className="row header"
@@ -34,6 +34,7 @@ app.layout = html.Div(
                     dcc.Tab(label="Employees", value="employees_tab"),
                     dcc.Tab(label="Consumers", value="consumers_tab"),
                     dcc.Tab(label="Dishes", value="dishes_tab"),
+                    dcc.Tab(label="Upcoming features", value="upcoming_features_tab"),
                 ],
                 value="stores_tab",
             )
@@ -62,8 +63,10 @@ def render_content(tab):
         return employees.layout
     elif tab=="dishes_tab":
         return dishes.layout
-    else:
+    elif tab=="consumers_tab":
         return consumers.layout
+    else:
+        return upcoming_features.layout
 
 if __name__ == "__main__":
     app.run_server(debug=True, host='0.0.0.0')

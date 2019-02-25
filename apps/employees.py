@@ -80,9 +80,41 @@ layout = [
     ]
 
 
-@app.callback(Output("employees_specific_recommendations", "children"), [Input("employee_names", "value")])
-def render_employee_content(employee_id):
-    layout = []
+@app.callback(Output("employees_specific_recommendations", "children"), [Input("store_name", "value")])
+def employee_recommendations_content(store_name):
+    
+    if store_name == 'Ulsoor Road':
+        layout = [
+            html.Div(
+                html.H5('In Ulsoor Road store, Donald is working lot of over-time while Thelma takes too many leaves.')
+            ),
+            html.Div(
+
+                html.H5('In Ulsoor Road store, employees are usually late'),
+            ),
+        ]
+    elif store_name == 'IndiraNagar':
+        layout = [
+            html.Div(
+                html.H5('In IndiraNagar store, Ruth has very high working hours while Philip takes too many leaves.')
+            ),
+            html.Div(
+
+                html.H5('In IndiraNagar store, employees workign hours are very  inconsistent'),
+            ),
+        ]
+    elif store_name == 'Airport':
+        layout = [
+            html.Div(
+                html.H5('In Airport store, April is working lot of over-time while Tina takes too many leaves.')
+            ),
+            html.Div(
+
+                html.H5('In Airport store, employees are usually late'),
+            ),
+        ]
+
+
 
     return layout
 
