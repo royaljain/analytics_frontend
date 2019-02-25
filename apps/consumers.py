@@ -218,7 +218,7 @@ def employee_recommendations_content(store_name):
     elif store_name == 'Airport':
         layout = [
             html.Div(
-                html.H5('In Airport store, lot of variation in sales between 6th and 7th February. Kindly investigate.')
+                html.H5('In Airport store, lot of variation in sales between 6th and 7th February. Kindly investigate')
             ),
             html.Div(
 

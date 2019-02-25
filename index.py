@@ -7,7 +7,7 @@ import plotly.plotly as py
 from plotly import graph_objs as go
 import math
 from app import app
-from apps import employees, dishes, consumers, upcoming_features
+from apps import employees, dishes, consumers, upcoming_features, company
 
 
 app.layout = html.Div(
@@ -34,9 +34,10 @@ app.layout = html.Div(
                     dcc.Tab(label="Employees", value="employees_tab"),
                     dcc.Tab(label="Consumers", value="consumers_tab"),
                     dcc.Tab(label="Dishes", value="dishes_tab"),
+                    dcc.Tab(label="Company", value="company_tab"),
                     dcc.Tab(label="Upcoming features", value="upcoming_features_tab"),
                 ],
-                value="stores_tab",
+                value="employees_tab",
             )
 
             ],
@@ -65,6 +66,8 @@ def render_content(tab):
         return dishes.layout
     elif tab=="consumers_tab":
         return consumers.layout
+    elif tab=="company_tab":
+        return company.layout
     else:
         return upcoming_features.layout
 
